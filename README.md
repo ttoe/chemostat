@@ -6,7 +6,6 @@ Implementing a chemostat model.
 
 + python3
 + matplotlib
-+ stack (easiest, but not actually obligatory)
 
 ### How to run
 
