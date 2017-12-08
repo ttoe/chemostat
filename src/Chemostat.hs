@@ -81,22 +81,22 @@ eqSystem pars t vars = LA.fromList [ ds  basePars s c1 c2 p tp
 
 -- the time steps for which the result is given
 time ::  LA.Vector D
-time = times 0 2000 0.1
+time = times 0 10 1.0
 
 -- solving the equations numerically; returning the solutions matrix
-solution :: LA.Matrix D
-solution = odeSolveV
+solveEqs :: (Par -> D -> LA.Vector D -> LA.Vector D) -> Par -> LA.Matrix D
+solveEqs eqSys pars = odeSolveV
   RKf45    -- ODE Method
   1E-8     -- initial step size
   1E-8     -- absolute tolerance for the state vector
   0        -- relative tolerance for the state vector
-  (eqSystem basePars) -- differential eqations: xdot(t,x), ...
+  (eqSys pars) -- differential eqations: xdot(t,x), ...
   initVals -- inital conditions
   time     -- desired solution times
 
 -- adding a column to the solution matrix, containing the total of both clones Cu+Cd
 solWithCloneTotal :: LA.Matrix D
-solWithCloneTotal = matrixAddSumCol 1 2 solution
+solWithCloneTotal = matrixAddSumCol 1 2 $ solveEqs eqSystem basePars
 
 -- defining a plot that is later saved to a file
 -- this uses python with matplotlib under the hood
@@ -120,7 +120,13 @@ runChemostat = do
 -- run time series, bifurcation and plots from different modules in Main.hs
 
 bifurcationPars :: [Par]
-bifurcationPars = [ basePars { d = x } | x <- [0.01,0.02..0.16] ]
+bifurcationPars = [ basePars { d = x } | x <- [0.01,0.02..0.05] ]
 
-bifEqSystemsWithPars :: [D -> LA.Vector D -> LA.Vector D]
-bifEqSystemsWithPars = fmap eqSystem bifurcationPars
+-- bifEqSystemsWithPars :: [D -> LA.Vector D -> LA.Vector D]
+-- bifEqSystemsWithPars = fmap eqSystem bifurcationPars
+
+-- can i compute the systems and also output the currently processed par?
+-- can i carry the used parameters with the computation, to later write some meta data?
+bifSolutions :: [LA.Matrix D]
+bifSolutions = fmap (solveEqs eqSystem) bifurcationPars
+
