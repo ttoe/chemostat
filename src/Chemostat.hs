@@ -3,7 +3,7 @@
 {-# LANGUAGE OverloadedStrings    #-} -- for Foundation
 {-# LANGUAGE ExtendedDefaultRules #-} -- for Matplotlib
 
-module Chemostat (runChemostat) where
+module Chemostat where
 
 -- custom functions
 import Util
@@ -24,10 +24,11 @@ type D = Double
 
 -- parameter data type, holding the parameters that are passed to the differential equations.
 data Par = Par { d, si, gc, xc, kmax, pu, pd, a, gp, kp, xp, gtp, ktp, xtp :: D }
+  deriving (Show)
 
 -- the parameters that are actually used in the simulation
-par :: Par
-par = Par {
+basePars :: Par
+basePars = Par {
   d    = 0.05, -- dilution rate
   si   = 4.0,  -- inflow nutrient concentration
   gc   = 0.5,  -- maximum consumption rate Cu/Cd
@@ -49,27 +50,31 @@ initVals :: LA.Vector D -- [   S,  Cu,  Cd,  Pi,  Pt ]
 initVals =  LA.fromList    [ 0.5, 0.5, 0.5, 0.2, 0.0 ]
 
 -- helpers for sub-functions (half saturation/palatability trade-off)
+-- or: kcu = let Par{..} = basePars in kmax - a * pu
+-- or with ViewPatterns, PatternGuards, RecordWildcards even shorter:
+-- kcu | Par{..} <- basePars = kmax - a*pu
 kcu, kcd :: D
-kcu = kcu' par
-  where kcu' Par{..} = kmax - a*pu -- trade-off curve Cu
-kcd = kcd' par
-  where kcd' Par{..} = kmax - a*pd -- trade-off curve Cd
+kcu = kmax - a*pu where Par{..} = basePars
+kcd = kmax - a*pd where Par{..} = basePars
+
+-- maybe define the functional responses also as sub functions?
 
 -- the differential equations to solve
 ds, dcu, dcd, dp, dtp :: Par -> D -> D -> D -> D -> D -> D
-ds   Par{..} s c1 c2 p tp = d*(si - s) - s*(gc*c1/(kcu + s) + (gc*c2/(kcd + s)))
-dcu  Par{..} s c1 c2 p tp = c1*(xc*gc*s/(kcu + s) - gp*pu*p/(kp + pu*c1 + pd*c2) - d)
-dcd  Par{..} s c1 c2 p tp = c2*(xc*gc*s/(kcd + s) - gp*pd*p/(kp + pu*c1 + pd*c2) - d)
-dp   Par{..} s c1 c2 p tp = p*(xp*gp*((pu*c1 + pd*c2)/(kp + pd*c1 + pd*c2)) - gtp*tp/(ktp + p) - d)
-dtp  Par{..} s c1 c2 p tp = tp*(xtp*gtp*p/(ktp + p) - d)
+ds  Par{..} s c1 c2 p tp = d*(si - s) - s*(gc*c1/(kcu + s) + (gc*c2/(kcd + s)))
+dcu Par{..} s c1 c2 p tp = c1*(xc*gc*s/(kcu + s) - gp*pu*p/(kp + pu*c1 + pd*c2) - d)
+dcd Par{..} s c1 c2 p tp = c2*(xc*gc*s/(kcd + s) - gp*pd*p/(kp + pu*c1 + pd*c2) - d)
+dp  Par{..} s c1 c2 p tp = p*(xp*gp*((pu*c1 + pd*c2)/(kp + pd*c1 + pd*c2)) - gtp*tp/(ktp + p) - d)
+dtp Par{..} s c1 c2 p tp = tp*(xtp*gtp*p/(ktp + p) - d)
 
 -- the differential equations system in the form that is passed to the solver
-eqSystem :: D -> LA.Vector D -> LA.Vector D
-eqSystem t vars = LA.fromList [ ds  par s c1 c2 p tp
-                              , dcu par s c1 c2 p tp
-                              , dcd par s c1 c2 p tp
-                              , dp  par s c1 c2 p tp
-                              , dtp par s c1 c2 p tp ]
+-- pars need to be passed here for bifurcation to work later on
+eqSystem :: Par -> D -> LA.Vector D -> LA.Vector D
+eqSystem pars t vars = LA.fromList [ ds  basePars s c1 c2 p tp
+                                   , dcu pars s c1 c2 p tp
+                                   , dcd pars s c1 c2 p tp
+                                   , dp  pars s c1 c2 p tp
+                                   , dtp pars s c1 c2 p tp ]
   where 
     -- pattern matching on vars to get the population densities for using them in the functions body
     [s, c1, c2, p, tp] = LA.toList vars 
@@ -85,7 +90,7 @@ solution = odeSolveV
   1E-8     -- initial step size
   1E-8     -- absolute tolerance for the state vector
   0        -- relative tolerance for the state vector
-  eqSystem -- differential eqations: xdot(t,x), ...
+  (eqSystem basePars) -- differential eqations: xdot(t,x), ...
   initVals -- inital conditions
   time     -- desired solution times
 
@@ -110,3 +115,12 @@ runChemostat :: IO ()
 runChemostat = do
   Right _ <- file "plot1.pdf" plot1
   return ()
+
+-- start working on bifurcation, should maybe be refactored later
+-- run time series, bifurcation and plots from different modules in Main.hs
+
+bifurcationPars :: [Par]
+bifurcationPars = [ basePars { d = x } | x <- [0.01,0.02..0.16] ]
+
+bifEqSystemsWithPars :: [D -> LA.Vector D -> LA.Vector D]
+bifEqSystemsWithPars = fmap eqSystem bifurcationPars
