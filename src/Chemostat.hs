@@ -23,27 +23,26 @@ import Graphics.Matplotlib
 type D = Double
 
 -- parameter data type, holding the parameters that are passed to the differential equations.
-data Par = Par { d, si, gc, xc, kmax, pu, pd, a, gp, kp, xp, gtp, ktp, xtp :: D }
+data Par = Par { d, ni, gc, ec, kmax, pu, pd, a, gg, kg, eg, gs, ks, es :: D }
   deriving (Show)
 
--- the parameters that are actually used in the simulation
 basePars :: Par
 basePars = Par {
   d    = 0.05, -- dilution rate
-  si   = 4.0,  -- inflow nutrient concentration
+  ni   = 4.0,  -- inflow nutrient concentration
   gc   = 0.5,  -- maximum consumption rate Cu/Cd
-  xc   = 0.3,  -- conversion efficiency Cu/Cd 
+  ec   = 0.3,  -- conversion efficiency Cu/Cd
   kmax = 0.3,  -- maximim half saturation Cu/Cd
   pu   = 1.0,  -- palatability Cu (undefended)
   pd   = 0.1,  -- palatability Cd (defended)
   a    = 0.29, -- trade-off strength
-  gp   = 0.5,  -- maximum consumption rate Pi
-  kp   = 0.5,  -- half saturation Pi
-  xp   = 0.3,  -- conversion efficiency Pi
-  gtp  = 0.5,  -- maximum consumption rate Pt
-  ktp  = 0.05, -- half saturation Pt
-  xtp  = 0.3   -- conversion effienciency Pt
-} 
+  gg   = 0.5,  -- maximum consumption rate Pi
+  kg   = 0.5,  -- half saturation Pi
+  eg   = 0.3,  -- conversion efficiency Pi
+  gs   = 0.5,  -- maximum consumption rate Pt
+  ks   = 0.05, -- half saturation Pt
+  es   = 0.3   -- conversion effienciency Pt
+}
 
 -- initial values for all variables
 initVals :: LA.Vector D -- [   S,  Cu,  Cd,  Pi,  Pt ]
