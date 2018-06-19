@@ -1,3 +1,5 @@
+-- TODO: use (!) from foundation everywhere
+
 {-# LANGUAGE NoImplicitPrelude    #-} -- disable standard prelude
 {-# LANGUAGE RecordWildCards      #-} -- for passing Pars to ODEs
 {-# LANGUAGE OverloadedStrings    #-} -- for Foundation
@@ -110,20 +112,20 @@ solWithCloneTotal = matrixAddSumCol 1 2 $ solveEqs eqSystem basePars
 
 -- defining a plot that is later saved to a file
 -- this uses python with matplotlib under the hood
-plot1 :: Matplotlib
-plot1 =
-  plot time (LA.toColumns solWithCloneTotal ! 0) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "S"] %
-  plot time (LA.toColumns solWithCloneTotal ! 1) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cu"] %
-  plot time (LA.toColumns solWithCloneTotal ! 2) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cd"] %
-  plot time (LA.toColumns solWithCloneTotal ! 3) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Pi"] %
-  plot time (LA.toColumns solWithCloneTotal ! 4) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Pt"] %
-  plot time (LA.toColumns solWithCloneTotal ! 5) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ct"] %
+plot1 :: LA.Matrix D -> Matplotlib
+plot1 solMatrix=
+  -- plot time (LA.toColumns solWithCloneTotal ! 0) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "N"] %
+  plot time (LA.toColumns solMatrix ! 1) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cu"] %
+  plot time (LA.toColumns solMatrix ! 2) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cd"] %
+  plot time (LA.toColumns solMatrix ! 3) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Pg"] %
+  plot time (LA.toColumns solMatrix ! 4) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ps"] %
+  plot time (LA.toColumns solMatrix ! 5) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ct"] %
   legend @@ [o2 "fancybox" True, o2 "shadow" False, o2 "title" "Legend", o2 "loc" "upper left"]
 
 -- putting everyting together to export it for usage in Main.hs
 runChemostat :: IO ()
 runChemostat = do
-  Right _ <- file "plot1.pdf" plot1
+  Right _ <- file "plot1.pdf" $ plot1 solWithCloneTotal
   return ()
 
 -- start working on bifurcation, should maybe be refactored later
@@ -139,3 +141,5 @@ bifurcationPars = [ basePars { d = x } | x <- [0.01,0.02..0.05] ]
 -- TODO: carry the used parameters with the computation, to later write some meta data?
   -- the parameters basically still exist in <bifurcationPars>
   -- with sequential evaluation they are reusable
+bifSolutions :: [Par] -> [LA.Matrix D]
+bifSolutions bifPars = fmap (solveEqs eqSystem) bifPars
