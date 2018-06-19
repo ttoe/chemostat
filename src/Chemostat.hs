@@ -108,7 +108,9 @@ solveEqs eqSys pars = odeSolveV
 
 -- adding a column to the solution matrix, containing the total of both clones Cu+Cd
 solWithCloneTotal :: LA.Matrix D
-solWithCloneTotal = matrixAddSumCol 1 2 $ solveEqs eqSystem basePars
+solWithCloneTotal = matrixAddSumCol 1 2 $ sol
+  where
+    sol = solveEqs eqSystem basePars
 
 -- TODO: use frames instead of matrices and use semantic indexing rather than numbers
 
