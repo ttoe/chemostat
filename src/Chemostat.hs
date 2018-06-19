@@ -56,27 +56,36 @@ kcu, kcd :: D
 kcu = kmax - a*pu where Par{..} = basePars
 kcd = kmax - a*pd where Par{..} = basePars
 
--- maybe define the functional responses also as sub functions?
-
 -- the differential equations to solve
-ds, dcu, dcd, dp, dtp :: Par -> D -> D -> D -> D -> D -> D
-ds  Par{..} s c1 c2 p tp = d*(si - s) - s*(gc*c1/(kcu + s) + (gc*c2/(kcd + s)))
-dcu Par{..} s c1 c2 p tp = c1*(xc*gc*s/(kcu + s) - gp*pu*p/(kp + pu*c1 + pd*c2) - d)
-dcd Par{..} s c1 c2 p tp = c2*(xc*gc*s/(kcd + s) - gp*pd*p/(kp + pu*c1 + pd*c2) - d)
-dp  Par{..} s c1 c2 p tp = p*(xp*gp*((pu*c1 + pd*c2)/(kp + pd*c1 + pd*c2)) - gtp*tp/(ktp + p) - d)
-dtp Par{..} s c1 c2 p tp = tp*(xtp*gtp*p/(ktp + p) - d)
+dn, dcu, dcd, dpg, dps :: Par -> D -> D -> D -> D -> D -> D
+dn  Par{..} n cu cd pg ps = - d*n
+                            + d*ni
+                            - n*gc*cu/(kcu + n)
+                            - n*gc*cd/(kcd + n)
+dcu Par{..} n cu cd pg ps = - d*cu
+                            + cu*ec*gc*n/(kcu + n)
+                            - cu*gg*pu*pg/(kg + pu*cu + pd*cd)
+dcd Par{..} n cu cd pg ps = - d*cd
+                            + cu*ec*gc*n/(kcd + n)
+                            - gg*pd*pg/(kg + pu*cu + pd*cd)
+dpg Par{..} n cu cd pg ps = - d*pg
+                            + pg*eg*gg*(pu*cu)/(kg + pu*cu + pd*cd)
+                            + pg*eg*gg*(pd*cd)/(kg + pu*cu + pd*cd)
+                            - pg*gs*ps/(ks + pg)
+dps Par{..} n cu cd pg ps = - d*ps
+                            + ps*es*gs*pg/(ks + pg)
 
 -- the differential equations system in the form that is passed to the solver
 -- pars need to be passed here for bifurcation to work later on
 eqSystem :: Par -> D -> LA.Vector D -> LA.Vector D
-eqSystem pars t vars = LA.fromList [ ds  basePars s c1 c2 p tp
-                                   , dcu pars s c1 c2 p tp
-                                   , dcd pars s c1 c2 p tp
-                                   , dp  pars s c1 c2 p tp
-                                   , dtp pars s c1 c2 p tp ]
-  where 
+eqSystem pars t vars = LA.fromList [ dn  pars n cu cd pg ps
+                                   , dcu pars n cu cd pg ps
+                                   , dcd pars n cu cd pg ps
+                                   , dpg pars n cu cd pg ps
+                                   , dps pars n cu cd pg ps ]
+  where
     -- pattern matching on vars to get the population densities for using them in the functions body
-    [s, c1, c2, p, tp] = LA.toList vars 
+    [n, cu, cd, pg, ps] = LA.toList vars
 
 -- the time steps for which the result is given
 time ::  LA.Vector D
