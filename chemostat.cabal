@@ -1,0 +1,26 @@
+name:           chemostat
+version:        0.1.0.0
+description:    Chemostat model implemented in Haskell using GSL bindings from HMatrix.
+author:         Thaddäus Töppen
+copyright:      2017 Thaddäus Töppen
+license:        BSD3
+build-type:     Simple
+cabal-version:  >= 1.10
+
+executable chemostat
+  main-is: Main.hs
+  other-modules:
+      Chemostat
+      Util
+  hs-source-dirs:
+      src
+  default-extensions: NoImplicitPrelude OverloadedStrings
+  ghc-options: -O2
+  build-depends:
+      base >=4.10 && <5
+    , foundation
+    , hmatrix
+    , hmatrix-gsl
+    , matplotlib
+    , vector
+  default-language: Haskell2010
