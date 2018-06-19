@@ -97,6 +97,8 @@ solveEqs eqSys pars = odeSolveV
 solWithCloneTotal :: LA.Matrix D
 solWithCloneTotal = matrixAddSumCol 1 2 $ solveEqs eqSystem basePars
 
+-- TODO: use frames instead of matrices and use semantic indexing rather than numbers
+
 -- defining a plot that is later saved to a file
 -- this uses python with matplotlib under the hood
 plot1 :: Matplotlib
@@ -124,8 +126,7 @@ bifurcationPars = [ basePars { d = x } | x <- [0.01,0.02..0.05] ]
 -- bifEqSystemsWithPars :: [D -> LA.Vector D -> LA.Vector D]
 -- bifEqSystemsWithPars = fmap eqSystem bifurcationPars
 
--- can i compute the systems and also output the currently processed par?
--- can i carry the used parameters with the computation, to later write some meta data?
-bifSolutions :: [LA.Matrix D]
-bifSolutions = fmap (solveEqs eqSystem) bifurcationPars
-
+-- TODO: compute the systems and also output the currently processed par?
+-- TODO: carry the used parameters with the computation, to later write some meta data?
+  -- the parameters basically still exist in <bifurcationPars>
+  -- with sequential evaluation they are reusable
