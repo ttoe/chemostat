@@ -10,6 +10,8 @@ module Chemostat where
 -- custom functions
 import Util
 
+import Data.List ((!!))
+
 -- instead of prelude
 import Foundation
 import Foundation.Collection ((!))
@@ -112,8 +114,8 @@ solWithCloneTotal = matrixAddSumCol 1 2 $ solveEqs eqSystem basePars
 
 -- defining a plot that is later saved to a file
 -- this uses python with matplotlib under the hood
-plot1 :: LA.Matrix D -> Matplotlib
-plot1 solMatrix=
+myPlot :: LA.Matrix D -> Matplotlib
+myPlot solMatrix =
   -- plot time (LA.toColumns solWithCloneTotal ! 0) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "N"] %
   plot time (LA.toColumns solMatrix ! 1) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cu"] %
   plot time (LA.toColumns solMatrix ! 2) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cd"] %
@@ -121,15 +123,6 @@ plot1 solMatrix=
   plot time (LA.toColumns solMatrix ! 4) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ps"] %
   plot time (LA.toColumns solMatrix ! 5) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ct"] %
   legend @@ [o2 "fancybox" True, o2 "shadow" False, o2 "title" "Legend", o2 "loc" "upper left"]
-
--- putting everyting together to export it for usage in Main.hs
-runChemostat :: IO ()
-runChemostat = do
-  Right _ <- file "plot1.pdf" $ plot1 solWithCloneTotal
-  return ()
-
--- start working on bifurcation, should maybe be refactored later
--- run time series, bifurcation and plots from different modules in Main.hs
 
 bifurcationPars :: [Par]
 bifurcationPars = [ basePars { d = x } | x <- [0.01,0.02..0.05] ]
@@ -143,3 +136,15 @@ bifurcationPars = [ basePars { d = x } | x <- [0.01,0.02..0.05] ]
   -- with sequential evaluation they are reusable
 bifSolutions :: [Par] -> [LA.Matrix D]
 bifSolutions bifPars = fmap (solveEqs eqSystem) bifPars
+
+-- putting everyting together to export it for usage in Main.hs
+runChemostat :: IO ()
+runChemostat = do
+  let addedColMatrices = fmap (matrixAddSumCol 1 2) (bifSolutions bifurcationPars)
+  Right _ <- file "plot0.pdf" $ myPlot solWithCloneTotal
+  Right _ <- file "plot1.pdf" $ myPlot $ addedColMatrices !! 0
+  Right _ <- file "plot2.pdf" $ myPlot $ addedColMatrices !! 1
+  Right _ <- file "plot3.pdf" $ myPlot $ addedColMatrices !! 2
+  Right _ <- file "plot4.pdf" $ myPlot $ addedColMatrices !! 3
+  Right _ <- file "plot5.pdf" $ myPlot $ addedColMatrices !! 40
+  return ()
