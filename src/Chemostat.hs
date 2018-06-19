@@ -94,13 +94,13 @@ time = times 0 10 1.0
 -- solving the equations numerically; returning the solutions matrix
 solveEqs :: (Par -> D -> LA.Vector D -> LA.Vector D) -> Par -> LA.Matrix D
 solveEqs eqSys pars = odeSolveV
-  RKf45    -- ODE Method
-  1E-8     -- initial step size
-  1E-8     -- absolute tolerance for the state vector
-  0        -- relative tolerance for the state vector
-  (eqSys pars) -- differential eqations: xdot(t,x), ...
-  initVals -- inital conditions
-  time     -- desired solution times
+  RKf45        -- ODE Method
+  1E-8         -- initial step size
+  1E-8         -- absolute tolerance for the state vector
+  0            -- relative tolerance for the state vector
+  (eqSys pars) -- differential equations: xdot(t,x), ...
+  initVals     -- inital conditions
+  time         -- desired solution times
 
 -- adding a column to the solution matrix, containing the total of both clones Cu+Cd
 solWithCloneTotal :: LA.Matrix D
