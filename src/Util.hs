@@ -18,7 +18,7 @@ import qualified Data.Vector.Storable as VS
 import qualified Numeric.LinearAlgebra as LA
 import Numeric.GSL.Differentiation (derivCentral)
 
-type D = Double 
+type D = Double
 
 -- alias differentiation function to central derivative with initial step size 0.01
 diff :: (D -> D) -> D -> D
@@ -38,24 +38,24 @@ diff fun point = fst $ derivCentral 0.01 fun point
 -- getNowTimeString = do
 --   now <- getCurrentTime
 --   pure (formatTime defaultTimeLocale "%F_%H%M%S" now)
--- 
+--
 -- -- zipColumns :: (V.Storable a, V.Storable b, LA.Element a) =>
 --   -- (a -> a -> b) -> LA.Matrix a -> Int -> Int -> V.Vector b
 -- zipColumns :: (Double -> Double -> Double) -> LA.Matrix Double -> Int -> Int -> VS.Vector Double
 -- zipColumns f m x y = DV.zipWith f (columns !! x) (columns !! y)
 --   where
 --     columns = LA.toColumns m
--- 
+--
 -- -- zipWithColumn :: (V.Storable a, V.Storable b, V.Storable c, LA.Element a) =>
 --   -- (a -> b -> c) -> LA.Matrix a -> V.Vector b -> Int -> V.Vector c
 -- zipWithColumn :: (Double -> Double -> Double) -> LA.Matrix Double -> LA.Vector Double -> Int -> LA.Vector Double
--- zipWithColumn fun mtx vec col = DV.zip vec mcol 
+-- zipWithColumn fun mtx vec col = DV.zip vec mcol
 --   where
 --     mcol = (LA.toColumns mtx) !! col
 
 zipVecWith2 :: (D -> D -> D) -> LA.Vector D -> LA.Vector D -> LA.Vector D
 zipVecWith2 f x y = VS.zipWith f x y
-  
+
 getMatrixCol :: Int -> LA.Matrix D -> LA.Vector D
 getMatrixCol i m = (LA.toColumns m) !! i
 
