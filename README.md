@@ -5,7 +5,7 @@ Implementing a chemostat model in Haskell, using [hmatrix](https://hackage.haske
 ### Dependencies
 
 For building:
-+ [stack](https://github.com/commercialhaskell/stack) ≥ 1.6.1
++ [stack](https://github.com/commercialhaskell/stack) ≥ 1.7.1
 
 For plotting:
 
@@ -16,4 +16,4 @@ For plotting:
 
 In the project root directory run `stack build` and then `stack exec chemostat`.
 
-The plot file will be written to that directory as well.
+The plot files will be written to that directory as well.
