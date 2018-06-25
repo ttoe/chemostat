@@ -23,6 +23,8 @@ import Foundation.Collection ((!))
 import qualified Numeric.LinearAlgebra as LA
 import Numeric.GSL.ODE (ODEMethod(..), odeSolveV)
 
+import Control.Monad (forM)
+
 -- plotting
 import Graphics.Matplotlib
 
@@ -139,8 +141,21 @@ bifurcationPars = [ basePars { d = x } | x <- [0.01,0.02..0.05] ]
 -- TODO: carry the used parameters with the computation, to later write some meta data?
   -- the parameters basically still exist in <bifurcationPars>
   -- with sequential evaluation they are reusable
-bifSolutions :: [Par] -> [LA.Matrix D]
-bifSolutions bifPars = fmap (solveEqs eqSystem) bifPars
+-- Version without output:
+  -- bifSolutions :: [Par] -> [LA.Matrix D]
+  -- bifSolutions bifPars = fmap (solveEqs eqSystem) bifPars
+bifSolutions :: [Par] -> IO [LA.Matrix D]
+bifSolutions bifPars = do
+  let eqSolver = solveEqs eqSystem
+
+  res <- forM bifurcationPars $ \pars -> do
+    putStrLn $ show (d pars)
+    return $ eqSolver pars
+
+  return res
+
+addSumColToListOfMatrices :: Int -> Int -> [LA.Matrix D] -> [LA.Matrix D]
+addSumColToListOfMatrices c1 c2 ms = fmap (matrixAddSumCol c1 c2) ms
 
 -- putting everyting together to export it for usage in Main.hs
 runChemostat :: IO ()
