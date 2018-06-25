@@ -121,18 +121,22 @@ solWithCloneTotal = matrixAddSumCol 1 2 $ sol
 
 -- defining a plot that is later saved to a file
 -- this uses python with matplotlib under the hood
-myPlot :: LA.Matrix D -> Matplotlib
-myPlot solMatrix =
-  -- plot time (LA.toColumns solWithCloneTotal ! 0) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "N"] %
-  plot time (LA.toColumns solMatrix ! 1) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cu"] %
-  plot time (LA.toColumns solMatrix ! 2) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cd"] %
-  plot time (LA.toColumns solMatrix ! 3) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Pg"] %
-  plot time (LA.toColumns solMatrix ! 4) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ps"] %
-  plot time (LA.toColumns solMatrix ! 5) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ct"] %
+myPlot :: Int -> LA.Vector D -> LA.Matrix D -> Matplotlib
+myPlot drops time solMatrix =
+  -- plot (cols ! 0) (cols ! 1) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "N"] %
+  plot (cols ! 0) (cols ! 2) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cu"] %
+  plot (cols ! 0) (cols ! 3) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cd"] %
+  plot (cols ! 0) (cols ! 4) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Pg"] %
+  plot (cols ! 0) (cols ! 5) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ps"] %
+  plot (cols ! 0) (cols ! 6) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ct"] %
   legend @@ [o2 "fancybox" True, o2 "shadow" False, o2 "title" "Legend", o2 "loc" "upper left"]
+  where
+    withTime = LA.fromColumns $ time : LA.toColumns solMatrix
+    sliced   = withTime LA.?? (LA.Drop drops, LA.All)
+    cols     = LA.toColumns sliced
 
 bifurcationPars :: [Par]
-bifurcationPars = [ basePars { d = x } | x <- [0.01,0.02..0.05] ]
+bifurcationPars = [ basePars { d = x } | x <- [0.01,0.0101..0.06] ]
 
 -- bifEqSystemsWithPars :: [D -> LA.Vector D -> LA.Vector D]
 -- bifEqSystemsWithPars = fmap eqSystem bifurcationPars
@@ -160,11 +164,17 @@ addSumColToListOfMatrices c1 c2 ms = fmap (matrixAddSumCol c1 c2) ms
 -- putting everyting together to export it for usage in Main.hs
 runChemostat :: IO ()
 runChemostat = do
-  let addedColMatrices = fmap (matrixAddSumCol 1 2) (bifSolutions bifurcationPars)
-  Right _ <- file "plot0.pdf" $ myPlot solWithCloneTotal
-  Right _ <- file "plot1.pdf" $ myPlot $ addedColMatrices !! 0
-  Right _ <- file "plot2.pdf" $ myPlot $ addedColMatrices !! 1
-  Right _ <- file "plot3.pdf" $ myPlot $ addedColMatrices !! 2
-  Right _ <- file "plot4.pdf" $ myPlot $ addedColMatrices !! 3
-  Right _ <- file "plot5.pdf" $ myPlot $ addedColMatrices !! 40
+  startTime <- getCPUTime
+  -- sols <- mapM bifSolutions bifurcationPars
+  sols <- bifSolutions bifurcationPars
+  let addedColMatrices = addSumColToListOfMatrices 1 2 sols
+  -- let addedColMatrices = fmap (matrixAddSumCol 1 2) sols
+  endTime   <- getCPUTime
+  putStrLn $ show $ (endTime - startTime) `div` 1000000000
+  -- Right _ <- file "plot0.pdf" $ myPlot solWithCloneTotal
+  -- Right _ <- file "plot1.pdf" $ myPlot 10000 time $ addedColMatrices !! 0
+  -- Right _ <- file "plot2.pdf" $ myPlot 10000 time $ addedColMatrices !! 100
+  -- Right _ <- file "plot3.pdf" $ myPlot 10000 time $ addedColMatrices !! 200
+  -- Right _ <- file "plot4.pdf" $ myPlot 10000 time $ addedColMatrices !! 300
+  Right _ <- file "plot5.pdf" $ myPlot 197000 time $ addedColMatrices !! 500
   return ()
