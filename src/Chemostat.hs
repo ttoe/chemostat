@@ -98,7 +98,7 @@ eqSystem pars t vars = LA.fromList [ dn  pars n cu cd pg ps
 
 -- the time steps for which the result is given
 time ::  LA.Vector D
-time = times 0 10 1.0
+time = times 0 20000 0.1
 
 -- solving the equations numerically; returning the solutions matrix
 solveEqs :: (Par -> D -> LA.Vector D -> LA.Vector D) -> Par -> LA.Matrix D
