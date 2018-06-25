@@ -7,6 +7,9 @@
 
 module Chemostat where
 
+-- timing
+import System.CPUTime (getCPUTime)
+
 -- custom functions
 import Util
 
