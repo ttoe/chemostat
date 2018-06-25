@@ -5,4 +5,4 @@ packages:
 extra-deps:
 - github: abarbu/matplotlib-haskell
   commit: ff5482395f2abd70babc3334078bc9f0e4ddc5b4
-resolver: nightly-2018-06-19
+resolver: nightly-2018-06-25
