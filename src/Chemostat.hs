@@ -7,28 +7,16 @@
 
 module Chemostat where
 
--- timing
 import Data.Time.Clock
-
--- custom functions
-import Util
-
 import qualified Data.Csv as C
 import Data.Csv.HMatrix (encodeMatrixWith)
 import Data.List ((!!))
-
--- instead of prelude
-import Foundation
-import Foundation.Collection ((!))
-
--- solving ODEs and working with the resulting data
 import qualified Numeric.LinearAlgebra as LA
 import Numeric.GSL.ODE (ODEMethod(..), odeSolveV)
-
 import Control.Monad (forM)
-
--- plotting
 import Graphics.Matplotlib
+
+import Util
 
 -- to keep type signatures short
 type D = Double
