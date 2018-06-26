@@ -25,4 +25,6 @@ executable chemostat
     , matplotlib
     , vector
     , time
+    , hmatrix-csv
+    , cassava
   default-language: Haskell2010

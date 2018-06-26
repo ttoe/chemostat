@@ -13,6 +13,8 @@ import Data.Time.Clock
 -- custom functions
 import Util
 
+import qualified Data.Csv as C
+import Data.Csv.HMatrix (encodeMatrixWith)
 import Data.List ((!!))
 
 -- instead of prelude
