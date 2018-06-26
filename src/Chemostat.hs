@@ -1,4 +1,5 @@
 -- TODO: use (!) from foundation everywhere
+-- TODO: use Debug.Trace (trace)
 
 {-# LANGUAGE NoImplicitPrelude    #-} -- disable standard prelude
 {-# LANGUAGE RecordWildCards      #-} -- for passing Pars to ODEs
