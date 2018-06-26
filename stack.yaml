@@ -3,6 +3,8 @@ extra-package-dbs: []
 packages:
 - .
 extra-deps:
+- hmatrix-sundials-0.19.0.0
 - github: abarbu/matplotlib-haskell
   commit: ff5482395f2abd70babc3334078bc9f0e4ddc5b4
 resolver: nightly-2018-06-25
+allow-newer: true

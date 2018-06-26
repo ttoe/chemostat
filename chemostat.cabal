@@ -21,6 +21,8 @@ executable chemostat
     , foundation
     , hmatrix
     , hmatrix-gsl
+    , hmatrix-sundials
     , matplotlib
     , vector
+    , time
   default-language: Haskell2010
