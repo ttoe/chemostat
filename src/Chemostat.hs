@@ -9,7 +9,7 @@
 module Chemostat where
 
 -- timing
-import System.CPUTime (getCPUTime)
+import Data.Time.Clock
 
 -- custom functions
 import Util
@@ -165,13 +165,13 @@ addSumColToListOfMatrices c1 c2 ms = fmap (matrixAddSumCol c1 c2) ms
 -- putting everyting together to export it for usage in Main.hs
 runChemostat :: IO ()
 runChemostat = do
-  startTime <- getCPUTime
+  startTime <- getCurrentTime
   -- sols <- mapM bifSolutions bifurcationPars
   sols <- bifSolutions bifurcationPars
   let addedColMatrices = addSumColToListOfMatrices 1 2 sols
   -- let addedColMatrices = fmap (matrixAddSumCol 1 2) sols
-  endTime   <- getCPUTime
-  putStrLn $ show $ (endTime - startTime) `div` 1000000000
+  endTime   <- getCurrentTime
+  putStrLn $ show $ diffUTCTime endTime startTime
   -- Right _ <- file "plot0.pdf" $ myPlot solWithCloneTotal
   -- Right _ <- file "plot1.pdf" $ myPlot 10000 time $ addedColMatrices !! 0
   -- Right _ <- file "plot2.pdf" $ myPlot 10000 time $ addedColMatrices !! 100
