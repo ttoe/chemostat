@@ -1,7 +1,6 @@
 -- TODO: use (!) from foundation everywhere
 -- TODO: use Debug.Trace (trace)
 
-{-# LANGUAGE NoImplicitPrelude    #-} -- disable standard prelude
 {-# LANGUAGE RecordWildCards      #-} -- for passing Pars to ODEs
 {-# LANGUAGE OverloadedStrings    #-} -- for Foundation
 {-# LANGUAGE ExtendedDefaultRules #-} -- for Matplotlib
@@ -125,11 +124,11 @@ solWithCloneTotal = matrixAddSumCol 1 2 $ sol
 myPlot :: Int -> LA.Vector D -> LA.Matrix D -> Matplotlib
 myPlot drops time solMatrix =
   -- plot (cols ! 0) (cols ! 1) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "N"] %
-  plot (cols ! 0) (cols ! 2) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cu"] %
-  plot (cols ! 0) (cols ! 3) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cd"] %
-  plot (cols ! 0) (cols ! 4) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Pg"] %
-  plot (cols ! 0) (cols ! 5) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ps"] %
-  plot (cols ! 0) (cols ! 6) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ct"] %
+  plot (cols !! 0) (cols !! 2) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cu"] %
+  plot (cols !! 0) (cols !! 3) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Cd"] %
+  plot (cols !! 0) (cols !! 4) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Pg"] %
+  plot (cols !! 0) (cols !! 5) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ps"] %
+  plot (cols !! 0) (cols !! 6) @@ [o1 "-", o2 "linewidth" 1, o2 "label" "Ct"] %
   legend @@ [o2 "fancybox" True, o2 "shadow" False, o2 "title" "Legend", o2 "loc" "upper left"]
   where
     withTime = LA.fromColumns $ time : LA.toColumns solMatrix
