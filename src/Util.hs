@@ -5,6 +5,7 @@ module Util
   , nowTimeString
   , writePlot
   , mkPlotTuples
+  , matrixAddTimeCol
   , printTimeDiff
   -- , findLocMaxWithIx
   -- , findLocMinWithIx
@@ -28,12 +29,17 @@ diff :: (D -> D) -> D -> D
 diff fun point = fst $ derivCentral 0.01 fun point
 
 
--- takes the time vector and the solution matrix
+-- takes a matrix where column 0 is the time
+-- and the other columns are the solutions at a given time
 -- creates a list of lists containing tuples
 -- for each variable and the corresponding time
--- necessary to satisfy plotting funtion
-mkPlotTuples :: Vector D -> Matrix D -> [[(D, D)]]
-mkPlotTuples v m = fmap (zip (toList v) . toList) (toColumns m)
+mkPlotTuples :: Matrix D -> [[(D, D)]]
+mkPlotTuples m = fmap (zip timeCol) columns
+  where
+    columns = fmap toList $ toColumns m
+    timeCol = columns !! 0
+
+
 
 
 -- create a timestamp like "2017-06-09_131211"

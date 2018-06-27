@@ -98,9 +98,9 @@ solveEqs eqSys pars = odeSolveV
   time         -- desired solution times
 
 
--- adding a column to the solution matrix, containing the total of both clones Cu+Cd
-solWithCt :: Matrix D
-solWithCt = matrixAddSumCol 1 2 $ sol
+-- adding a column to the solution matrix, containing the total of both clones Cu+Cd, and the time
+solWithTimeAndCt :: Matrix D
+solWithTimeAndCt = matrixAddTimeCol time $ matrixAddSumCol 1 2 $ sol
   where
     sol = solveEqs eqSystem basePars
 
@@ -129,16 +129,16 @@ bifSolutions bifPars = fmap (solveEqs eqSystem) bifPars
 
 
 timePlot sol = do
-  -- P.plot $ P.line "N"  [mkPlotTuples time sol !! 0]
-  P.plot $ P.line "Cu" [mkPlotTuples time sol !! 1]
-  P.plot $ P.line "Cd" [mkPlotTuples time sol !! 2]
-  P.plot $ P.line "Pg" [mkPlotTuples time sol !! 3]
-  P.plot $ P.line "Ps" [mkPlotTuples time sol !! 4]
-  P.plot $ P.line "Ct" [mkPlotTuples time sol !! 5]
+  -- P.plot $ P.line "N"  [mkPlotTuples time sol !! 1]
+  P.plot $ P.line "Cu" [mkPlotTuples sol !! 2]
+  P.plot $ P.line "Cd" [mkPlotTuples sol !! 3]
+  P.plot $ P.line "Pg" [mkPlotTuples sol !! 4]
+  P.plot $ P.line "Ps" [mkPlotTuples sol !! 5]
+  P.plot $ P.line "Ct" [mkPlotTuples sol !! 6]
 
 
 phasePlot sol = do
-  P.plot $ P.line "Pg~Ct" [ fmap (\[_, _, _, pg, _, ct] -> (ct, pg)) $ toLists sol ]
+  P.plot $ P.line "Pg~Ct" [ fmap (\[_, _, _, _, pg, _, ct] -> (ct, pg)) $ toLists sol ]
 
 
 runChemostat :: IO ()
