@@ -40,15 +40,6 @@ initVals :: Vector D -- [   N,  Cu,  Cd,  Pg,  Ps ]
 initVals =  fromList    [ 0.5, 0.5, 0.5, 0.2, 0.0 ]
 
 
-{-
--- helpers for sub-functions (half saturation/palatability trade-off)
-kcu, kcd :: D
-kcu = kmax - a*pu where Par{..} = basePars
-kcd = kmax - a*pd where Par{..} = basePars
--- kcu = let Par{..} = basePars in kmax - a * pu
--}
-
-
 -- the differential equations to solve
 dn, dcu, dcd, dpg, dps :: Par -> D -> D -> D -> D -> D -> D
 dn  Par{..} n cu cd _  _  = - d*n
