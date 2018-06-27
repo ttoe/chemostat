@@ -146,5 +146,5 @@ runChemostat = do
   let addedSumColMatrices = fmap (matrixAddSumCol 1 2) $ bifSolutions bifurcationPars
 
   timeStr <- nowTimeString
-  writePlot ("plots/chemo_timePlot_"  <> timeStr <> ".pdf") $ timePlot  solWithCt
-  writePlot ("plots/chemo_phasePlot_" <> timeStr <> ".pdf") $ phasePlot solWithCt
+  writePlot ("plots/chemo_timePlot_"  <> timeStr <> ".pdf") $ timePlot $ mtxLast 500 solWithTimeAndCt
+  writePlot ("plots/chemo_phasePlot_" <> timeStr <> ".pdf") $ phasePlot solWithTimeAndCt

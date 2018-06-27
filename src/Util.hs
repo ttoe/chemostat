@@ -6,6 +6,7 @@ module Util
   , writePlot
   , mkPlotTuples
   , matrixAddTimeCol
+  , mtxLast
   , printTimeDiff
   -- , findLocMaxWithIx
   -- , findLocMinWithIx
@@ -17,7 +18,16 @@ import Data.Time.Format (formatTime, defaultTimeLocale)
 import qualified Data.Vector.Storable as VS
 import Graphics.Rendering.Chart.Backend.Cairo (FileFormat(..), toFile, _fo_format)
 import Graphics.Rendering.Chart.Easy (Default, ToRenderable, EC, def)
-import Numeric.LinearAlgebra (Vector, Matrix, linspace, toColumns, fromColumns, toList)
+import Numeric.LinearAlgebra ( Vector
+                             , Matrix
+                             , Extractor(..)
+                             , (??)
+                             , linspace
+                             , toColumns
+                             , fromColumns
+                             , toList
+                             , atIndex
+                             )
 import Numeric.GSL.Differentiation (derivCentral)
 import Data.List (zip4)
 
@@ -40,6 +50,11 @@ mkPlotTuples m = fmap (zip timeCol) columns
     timeCol = columns !! 0
 
 
+mtxLast :: Int -> Matrix D -> Matrix D
+mtxLast l m = m ?? (TakeLast takeLast, All)
+  where
+    timeStep = m `atIndex` (1, 0) -- 2nd value (1, _) in 1st column (_, 0) is time step from times function
+    takeLast = floor $ fromIntegral l / timeStep
 
 
 -- create a timestamp like "2017-06-09_131211"
@@ -54,6 +69,10 @@ matrixAddSumCol x y m = fromColumns (columns <> [colSum])
   where
     columns = toColumns m
     colSum  = VS.zipWith (+) (columns !! x) (columns !! y)
+
+
+matrixAddTimeCol :: Vector D -> Matrix D -> Matrix D
+matrixAddTimeCol t m = fromColumns ([t] <> toColumns m)
 
 
 times :: D -> D -> D -> Vector D
