@@ -1,9 +1,7 @@
 name:           chemostat
 version:        0.1.0.0
-description:    Chemostat model implemented in Haskell using GSL bindings from HMatrix.
+description:    Chemostat model implemented in Haskell
 author:         Thaddäus Töppen
-copyright:      2018 Thaddäus Töppen
-license:        BSD3
 build-type:     Simple
 cabal-version:  >= 1.10
 
@@ -11,6 +9,7 @@ executable chemostat
   main-is: Main.hs
   other-modules:
       Chemostat
+      Model0
       Util
   hs-source-dirs:
       src
