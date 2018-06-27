@@ -81,8 +81,10 @@ times from to stepsize = linspace steps (from, to)
     steps = floor $ (to-from)/stepsize
 
 
-printTimeDiff :: UTCTime -> UTCTime -> IO ()
-printTimeDiff startTime endTime = print $ diffUTCTime endTime startTime
+printTimeDiff :: String -> UTCTime -> IO ()
+printTimeDiff s startTime = do
+  endTime <- getCurrentTime
+  print $ s <> (show $ diffUTCTime endTime startTime)
 
 
 -- these 3 min/max finding functions could be unified with a selector
