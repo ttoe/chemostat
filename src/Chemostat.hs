@@ -13,26 +13,25 @@ type D = Double
 
 
 -- parameter data type, holding the parameters that are passed to the differential equations.
-data Par = Par { d, ni, gc, ec, kmax, pu, pd, a, gg, kg, eg, gs, ks, es :: D }
+data Par = Par { d, ni, r, pu, pd, ku, kd, gg, kg, eg, gs, ks, es :: D }
   deriving (Show)
 
 
 basePars :: Par
 basePars = Par {
-  d    = 0.05, -- dilution rate
-  ni   = 4.0,  -- inflow nutrient concentration
-  gc   = 0.5,  -- maximum consumption rate Cu/Cd
-  ec   = 0.3,  -- conversion efficiency Cu/Cd
-  kmax = 0.3,  -- maximim half saturation Cu/Cd
+  d    = 0.25, -- dilution rate
+  ni   = 80.0, -- inflow nutrient concentration
+  r    = 1.0,  -- growth rate clones
   pu   = 1.0,  -- palatability Cu (undefended)
-  pd   = 0.1,  -- palatability Cd (defended)
-  a    = 0.29, -- trade-off strength
-  gg   = 0.5,  -- maximum consumption rate Pi
-  kg   = 0.5,  -- half saturation Pi
-  eg   = 0.3,  -- conversion efficiency Pi
-  gs   = 0.5,  -- maximum consumption rate Pt
-  ks   = 0.05, -- half saturation Pt
-  es   = 0.3   -- conversion effienciency Pt
+  pd   = 0.01, -- palatability Cd (defended)
+  ku   = 4.3,  -- half saturation Cu
+  kd   = 8.6,  -- half saturation Cd
+  gg   = 1.76, -- maximum consumption rate Pg
+  kg   = 28.0, -- half saturation Pg
+  eg   = 0.5,  -- conversion efficiency Pg
+  gs   = 1.76, -- maximum consumption rate Ps
+  ks   = 2.0,  -- half saturation Ps
+  es   = 0.5   -- conversion effienciency Ps
 }
 
 
@@ -41,31 +40,33 @@ initVals :: Vector D -- [   N,  Cu,  Cd,  Pg,  Ps ]
 initVals =  fromList    [ 0.5, 0.5, 0.5, 0.2, 0.0 ]
 
 
+{-
 -- helpers for sub-functions (half saturation/palatability trade-off)
 kcu, kcd :: D
 kcu = kmax - a*pu where Par{..} = basePars
 kcd = kmax - a*pd where Par{..} = basePars
 -- kcu = let Par{..} = basePars in kmax - a * pu
+-}
 
 
 -- the differential equations to solve
 dn, dcu, dcd, dpg, dps :: Par -> D -> D -> D -> D -> D -> D
-dn  Par{..} n cu cd  _ _ = - d*n
+dn  Par{..} n cu cd _  _  = - d*n
                             + d*ni
-                            - n*gc*cu/(kcu + n)
-                            - n*gc*cd/(kcd + n)
-dcu Par{..} n cu cd pg _ = - d*cu
-                            + cu*ec*gc*n/(kcu + n)
-                            - cu*gg*pu*pg/(kg + pu*cu + pd*cd)
-dcd Par{..} n cu cd pg _ = - d*cd
-                            + cu*ec*gc*n/(kcd + n)
-                            - gg*pd*pg/(kg + pu*cu + pd*cd)
+                            - r*(n/(ku+n))*cu
+                            - r*(n/(kd+n))*cd
+dcu Par{..} n cu cd pg _  = - d*cu
+                            + r*(n/(ku+n))*cu
+                            - gg*pu*(cu/(kg + pu*cu + pd*cd))*pg
+dcd Par{..} n cu cd pg _  = - d*cd
+                            + r*(n/(kd+n))*cd
+                            - gg*pd*(cd/(kg + pu*cu + pd*cd))*pg
 dpg Par{..} _ cu cd pg ps = - d*pg
-                            + pg*eg*gg*(pu*cu)/(kg + pu*cu + pd*cd)
-                            + pg*eg*gg*(pd*cd)/(kg + pu*cu + pd*cd)
-                            - pg*gs*ps/(ks + pg)
+                            + eg*gg*pu*(cu/(kg + pu*cu + pd*cd))*pg
+                            + eg*gg*pd*(cd/(kg + pu*cu + pd*cd))*pg
+                            - gs*(pg/(ks+pg))*ps
 dps Par{..} _ _  _  pg ps = - d*ps
-                            + ps*es*gs*pg/(ks + pg)
+                            + es*gs*(pg/(ks + pg))*ps
 
 
 -- the differential equations system in the form that is passed to the solver
@@ -81,8 +82,8 @@ eqSystem pars t vars = fromList [ dn  pars n cu cd pg ps
 
 
 -- the time steps for which the result is given
-time ::  Vector D
-time = times 0 5000 1.0
+time :: Vector D
+time = times 0 1000 0.1
 
 
 -- solving the equations numerically; returning the solutions matrix
@@ -137,7 +138,7 @@ timePlot sol = do
 
 
 phasePlot sol = do
-  P.plot $ P.line "Pg~Ct" [ fmap (\ [_, _, _, pg, _, ct] -> (ct, pg)) $ toLists sol ]
+  P.plot $ P.line "Pg~Ct" [ fmap (\[_, _, _, pg, _, ct] -> (ct, pg)) $ toLists sol ]
 
 
 runChemostat :: IO ()
