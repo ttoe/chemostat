@@ -1,6 +1,7 @@
 module Chemostat where
 
-import Numeric.LinearAlgebra (Matrix, Vector, fromList, toList, toLists)
+import Data.Time.Clock (getCurrentTime)
+import Numeric.LinearAlgebra (Matrix, Vector, fromList, toList, toLists, toColumns)
 import Numeric.GSL.ODE (ODEMethod(..), odeSolveV)
 import Control.Monad (forM)
 import qualified Graphics.Rendering.Chart.Easy as P
@@ -65,22 +66,27 @@ bifSolutions bifPars = fmap (solveEqs M0.model) bifPars
 
 
 timePlot sol = do
-  -- P.plot $ P.line "N"  [mkPlotTuples time sol !! 1]
-  P.plot $ P.line "Cu" [mkPlotTuples sol !! 2]
-  P.plot $ P.line "Cd" [mkPlotTuples sol !! 3]
-  P.plot $ P.line "Pg" [mkPlotTuples sol !! 4]
-  P.plot $ P.line "Ps" [mkPlotTuples sol !! 5]
-  P.plot $ P.line "Ct" [mkPlotTuples sol !! 6]
+  -- plotLine "N" 1
+  plotLine "Cu" 2
+  plotLine "Cd" 3
+  plotLine "Pg" 4
+  plotLine "Ps" 5
+  plotLine "Ct" 6
+  where
+    plotLine name col = P.plot $ P.line name [mkPlotTuples sol !! col]
 
 
-phasePlot sol = do
+phasePlot1 sol = do
   P.plot $ P.line "Pg~Ct" [ fmap (\[_, _, _, _, pg, _, ct] -> (ct, pg)) $ toLists sol ]
 
+phasePlot2 sol = do
+  P.plot $ P.line "Cu~Cd" [ fmap (\[_, cu, cd, _, _, _, _] -> (cu, cd)) $ toLists sol ]
 
 runChemostat :: IO ()
 runChemostat = do
   let addedSumColMatrices = fmap (matrixAddSumCol 1 2) $ bifSolutions bifurcationPars
 
-  timeStr <- nowTimeString
-  writePlot ("plots/chemo_timePlot_"  <> timeStr <> ".pdf") $ timePlot $ mtxLast 300 solWithTimeAndCt
-  writePlot ("plots/chemo_phasePlot_" <> timeStr <> ".pdf") $ phasePlot solWithTimeAndCt
+  -- timeStr <- nowTimeString
+  -- writePlot ("plots/chemo_timePlot_"  <> timeStr <> ".pdf") $ timePlot $ mtxLast 300 solWithTimeAndCt
+  -- writePlot ("plots/chemo_phasePlot1_" <> timeStr <> ".pdf") $ phasePlot1 solWithTimeAndCt
+  -- writePlot ("plots/chemo_phasePlot2_" <> timeStr <> ".pdf") $ phasePlot2 solWithTimeAndCt
