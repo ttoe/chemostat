@@ -6,6 +6,9 @@ module Util
   , writePlot
   , mkPlotTuples
   , printTimeDiff
+  -- , findLocMaxWithIx
+  -- , findLocMinWithIx
+  , findLocMinMaxWithIx
   ) where
 
 import Data.Time.Clock (UTCTime, getCurrentTime, diffUTCTime)
@@ -15,6 +18,7 @@ import Graphics.Rendering.Chart.Backend.Cairo (FileFormat(..), toFile, _fo_forma
 import Graphics.Rendering.Chart.Easy (Default, ToRenderable, EC, def)
 import Numeric.LinearAlgebra (Vector, Matrix, linspace, toColumns, fromColumns, toList)
 import Numeric.GSL.Differentiation (derivCentral)
+import Data.List (zip4)
 
 type D = Double
 
@@ -54,6 +58,32 @@ times from to stepsize = linspace steps (from, to)
 
 printTimeDiff :: UTCTime -> UTCTime -> IO ()
 printTimeDiff startTime endTime = print $ diffUTCTime endTime startTime
+
+
+-- these 3 min/max finding functions could be unified with a selector
+
+-- findLocMaxWithIx :: (Ord a, Num a) => [a] -> [(a, Int)]
+-- findLocMaxWithIx xs = map keepValueAndIx . filter isLocalMaximum $ zippedToWindow
+--   where
+--     zippedToWindow = zip4 xs (drop 1 xs) (drop 2 xs) [1..]
+--     keepValueAndIx = \(_, m, _, ix) -> (m, ix)
+--     isLocalMaximum = \(l, m, r, _) -> m > l && m > r
+--
+--
+-- findLocMinWithIx :: (Ord a, Num a) => [a] -> [(a, Int)]
+-- findLocMinWithIx xs = map keepValueAndIx . filter isLocalMinimum $ zippedToWindow
+--   where
+--     zippedToWindow = zip4 xs (drop 1 xs) (drop 2 xs) [1..]
+--     keepValueAndIx = \(_, m, _, ix) -> (m, ix)
+--     isLocalMinimum = \(l, m, r, _) -> m < l && m < r
+
+
+findLocMinMaxWithIx :: (Ord a, Num a) => [a] -> [(a, Int)]
+findLocMinMaxWithIx xs = map keepValueAndIx . filter isLocalMinOrMax $ zippedToWindow
+  where
+    zippedToWindow  = zip4 xs (drop 1 xs) (drop 2 xs) [1..]
+    keepValueAndIx  = \(_, m, _, ix) -> (m, ix)
+    isLocalMinOrMax = \(l, m, r, _)  -> (m < l && m < r) || (m > l && m > r)
 
 
 writePlot :: (Default r, ToRenderable r) => FilePath -> EC r () -> IO ()
