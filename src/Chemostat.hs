@@ -84,7 +84,15 @@ phasePlot2 sol = do
 
 runChemostat :: IO ()
 runChemostat = do
+  startTime <- getCurrentTime
   let addedSumColMatrices = fmap (matrixAddSumCol 1 2) $ bifSolutions bifurcationPars
+  printTimeDiff "1: " startTime
+  let test = fmap (mtxLast 300) addedSumColMatrices
+  printTimeDiff "2: " startTime
+  let minsMaxs = fmap (fmap (findLocMinMaxWithIx . toList) . toColumns) test -- . mtxLast 300) addedSumColMatrices
+  printTimeDiff "3: " startTime
+  print minsMaxs
+  printTimeDiff "4: " startTime
 
   -- timeStr <- nowTimeString
   -- writePlot ("plots/chemo_timePlot_"  <> timeStr <> ".pdf") $ timePlot $ mtxLast 300 solWithTimeAndCt
