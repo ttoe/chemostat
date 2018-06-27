@@ -12,7 +12,7 @@ import Data.Time.Clock (UTCTime, getCurrentTime, diffUTCTime)
 import Data.Time.Format (formatTime, defaultTimeLocale)
 import qualified Data.Vector.Storable as VS
 import Graphics.Rendering.Chart.Backend.Cairo (FileFormat(..), toFile, _fo_format)
-import Graphics.Rendering.Chart.Easy (def)
+import Graphics.Rendering.Chart.Easy (Default, ToRenderable, EC, def)
 import Numeric.LinearAlgebra (Vector, Matrix, linspace, toColumns, fromColumns, toList)
 import Numeric.GSL.Differentiation (derivCentral)
 
@@ -56,4 +56,5 @@ printTimeDiff :: UTCTime -> UTCTime -> IO ()
 printTimeDiff startTime endTime = print $ diffUTCTime endTime startTime
 
 
+writePlot :: (Default r, ToRenderable r) => FilePath -> EC r () -> IO ()
 writePlot filePath plot = toFile def {_fo_format=PDF} filePath plot
