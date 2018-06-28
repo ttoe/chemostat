@@ -11,6 +11,7 @@ module Util
   -- , findLocMaxWithIx
   -- , findLocMinWithIx
   , findLocMinMaxWithIx
+  , findLocMinMax
   ) where
 
 import Data.Time.Clock (UTCTime, getCurrentTime, diffUTCTime)
@@ -29,7 +30,7 @@ import Numeric.LinearAlgebra ( Vector
                              , atIndex
                              )
 import Numeric.GSL.Differentiation (derivCentral)
-import Data.List (zip4)
+import Data.List (zip4, zip3)
 
 type D = Double
 
@@ -105,13 +106,20 @@ printTimeDiff s startTime = do
 --     isLocalMinimum = \(l, m, r, _) -> m < l && m < r
 
 
+-- TODO: handle plateaus
 findLocMinMaxWithIx :: (Ord a, Num a) => [a] -> [(a, Int)]
 findLocMinMaxWithIx xs = map keepValueAndIx . filter isLocalMinOrMax $ zippedToWindow
   where
     zippedToWindow  = zip4 xs (drop 1 xs) (drop 2 xs) [1..]
-    keepValueAndIx  = \(_, m, _, ix) -> (m, ix)
-    isLocalMinOrMax = \(l, m, r, _)  -> (m < l && m < r) || (m > l && m > r)
+    keepValueAndIx (_, m, _, ix) = (m, ix)
+    isLocalMinOrMax (l, m, r, _) = (m < l && m < r) || (m > l && m > r)
 
+findLocMinMax :: (Ord a, Num a) => [a] -> [a]
+findLocMinMax xs = map keepValue . filter isLocalMinOrMax $ zippedToWindow
+  where
+    zippedToWindow            = zip3 xs (drop 1 xs) (drop 2 xs)
+    keepValue (_, m, _)       = m
+    isLocalMinOrMax (l, m, r) = (m < l && m < r) || (m > l && m > r)
 
 writePlot :: (Default r, ToRenderable r) => FilePath -> EC r () -> IO ()
 writePlot filePath plot = toFile def {_fo_format=PDF} filePath plot
