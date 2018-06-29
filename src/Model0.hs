@@ -12,8 +12,8 @@ data Par = Par
   { d, ni, r, pu, pd, ku, kd, gg, kg, eg, gs, ks, es :: D
   } deriving (Show)
 
-basePars :: Par
-basePars =
+basePars0 :: Par
+basePars0 =
   Par
     { d = 0.25 -- dilution rate
     , ni = 80.0 -- inflow nutrient concentration
@@ -49,8 +49,8 @@ dpg Par {..} _ cu cd pg ps =
 
 dps Par {..} _ _ _ pg ps = -d * ps + es * gs * (pg / (ks + pg)) * ps
 
-model :: Par -> D -> Vector D -> Vector D
-model pars t vars =
+model0 :: Par -> D -> Vector D -> Vector D
+model0 pars t vars =
   fromList
     [ dn pars n cu cd pg ps
     , dcu pars n cu cd pg ps
