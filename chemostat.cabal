@@ -22,4 +22,5 @@ executable chemostat
     , Chart-cairo
     , vector
     , time
+    , flow
   default-language: Haskell2010
