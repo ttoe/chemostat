@@ -8,4 +8,5 @@ echo ""
 
 echo "Profiled execution:"
 echo "==================="
-time stack exec -- chemostat +RTS -p
+time .stack-work-profiling/install/x86_64-osx/nightly-2018-06-29/8.4.3/bin/chemostat +RTS -p
+#time stack exec -- chemostat +RTS -p

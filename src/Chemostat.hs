@@ -1,7 +1,9 @@
 module Chemostat where
 
 import Control.Monad (forM)
-import Data.List (nubBy)
+import Control.Parallel.Strategies (parMap, rdeepseq)
+import Data.List (foldl1', nubBy)
+import Data.Time.Clock (getCurrentTime)
 import Flow
 import Graphics.Rendering.Chart.Easy (EC, Layout, line, plot)
 import Model0 (Par(..), basePars0, model0)
@@ -9,6 +11,7 @@ import Numeric.GSL.ODE (ODEMethod(..), odeSolveV)
 import Numeric.LinearAlgebra
   ( Matrix
   , Vector
+  , (===)
   , fromList
   , toColumns
   , toList
@@ -45,7 +48,7 @@ solWithTimeAndCt = matrixAddTimeCol time <| matrixAddSumCol 1 2 sol
 -- TODO: switch to keymap
 -- TODO: make a function of arguments from/to/step in Util
 bifurcationPars :: [Par]
-bifurcationPars = [basePars0 {d = x} | x <- [0.20,0.21 .. 0.30]]
+bifurcationPars = [basePars0 {d = x} | x <- [0.20,0.205 .. 0.30]]
   -- the parameters basically still exist in <bifurcationPars>
   -- with sequential evaluation they would be reusable
 
@@ -54,7 +57,7 @@ bifurcationPars = [basePars0 {d = x} | x <- [0.20,0.21 .. 0.30]]
 bifSolutionsWO :: (Par -> D -> Vector D -> Vector D) -> [Par] -> IO [Matrix D]
 bifSolutionsWO eqSystem bifPars = do
   let eqSolver = solveEqs eqSystem
-  forM bifPars $ \pars -> do
+  forM bifPars <| \pars -> do
     print pars
     pure <| eqSolver pars
 
@@ -79,16 +82,28 @@ phasePlot2 sol =
   plot <| line "Cu~Cd" [(\[_, cu, cd, _, _, _, _] -> (cu, cd)) <$> toLists sol]
 
 runChemostat :: IO ()
-runChemostat = do
-  let addedSumColMatrices = matrixAddSumCol 1 2 <$> bifSolutions bifurcationPars
-  let minsMaxs =
-        fmap
-          (fmap (findLocMinMax . toList) . toColumns . mtxLast 300)
-          addedSumColMatrices
-  let numMinsMaxs d = fmap (fmap $ length . nubBy (\x y -> x - y < d)) minsMaxs
+runChemostat
+  -- startTime <- getCurrentTime
+  -- let addedSumColMatrices = matrixAddSumCol 1 2 <$> bifSolutions bifurcationPars
+  -- -- let slicedCols = fmap (toColumns . mtxLast 300) addedSumColMatrices
+  -- -- let minsMaxs = fmap (fmap findLocMinMaxV) slicedCols
+  -- let minsMaxs = fmap (fmap flmm . toColumns . mtxLast 300) addedSumColMatrices
+  -- -- let numMinsMaxs d =
+  --       -- fmap (fmap <| VS.length . nubBy (\x y -> x - y < d)) minsMaxs
   -- print minsMaxs
-  print $ numMinsMaxs 1.0
+  -- printTimeDiff "1" startTime
+ = do
+  startTime2 <- getCurrentTime
+  let sols = bifSolutions bifurcationPars
+  let last300 = fmap (mtxLast 10000) sols
+  let conc = foldl1' (===) last300
+  let addSum = matrixAddSumCol 1 2 conc
+  let cols = toColumns addSum
+  let mm1 = parMap rdeepseq flmm cols
+  print (length mm1)
+  printTimeDiff "2" startTime2
+  -- print <| numMinsMaxs 1.0
   -- timeStr <- nowTimeString
-  -- writePlot ("plots/chemo_timePlot_"  <> timeStr <> ".pdf") $ timePlot $ mtxLast 300 solWithTimeAndCt
-  -- writePlot ("plots/chemo_phasePlot1_" <> timeStr <> ".pdf") $ phasePlot1 solWithTimeAndCt
-  -- writePlot ("plots/chemo_phasePlot2_" <> timeStr <> ".pdf") $ phasePlot2 solWithTimeAndCt
+  -- writePlot ("plots/chemo_timePlot_"  <> timeStr <> ".pdf") <| timePlot <| mtxLast 300 solWithTimeAndCt
+  -- writePlot ("plots/chemo_phasePlot1_" <> timeStr <> ".pdf") <| phasePlot1 solWithTimeAndCt
+  -- writePlot ("plots/chemo_phasePlot2_" <> timeStr <> ".pdf") <| phasePlot2 solWithTimeAndCt

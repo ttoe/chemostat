@@ -12,12 +12,17 @@ module Util
   -- , findLocMinWithIx
   , findLocMinMaxWithIx
   , findLocMinMax
+  , findLocMinMaxV
+  , flmm
   ) where
 
 import Data.List (zip3, zip4)
 import Data.Time.Clock (UTCTime, diffUTCTime, getCurrentTime)
 import Data.Time.Format (defaultTimeLocale, formatTime)
+import qualified Data.Vector as V
+import qualified Data.Vector.Generic as VG
 import qualified Data.Vector.Storable as VS
+import Flow
 import Graphics.Rendering.Chart.Backend.Cairo
   ( FileFormat(..)
   , _fo_format
@@ -80,7 +85,7 @@ times from to stepsize = linspace steps (from, to)
 printTimeDiff :: String -> UTCTime -> IO ()
 printTimeDiff s startTime = do
   endTime <- getCurrentTime
-  print $ s <> show (diffUTCTime endTime startTime)
+  print $ s <> " | " <> show (diffUTCTime endTime startTime)
 
 -- these 3 min/max finding functions could be unified with a selector
 -- findLocMaxWithIx :: (Ord a, Num a) => [a] -> [(a, Int)]
@@ -106,12 +111,37 @@ findLocMinMaxWithIx xs =
     keepValueAndIx (_, m, _, ix) = (m, ix)
     isLocalMinOrMax (l, m, r, _) = (m < l && m < r) || (m > l && m > r)
 
-findLocMinMax :: (Ord a, Num a) => [a] -> [a]
+findLocMinMaxV :: VS.Vector D -> V.Vector D
+findLocMinMaxV vec =
+  V.map keepValue <| V.filter isLocalMinOrMax (zipped convVec)
+  where
+    convVec = V.convert vec :: V.Vector D
+    zipped :: V.Vector D -> V.Vector (D, D, D)
+    zipped v = V.zip3 v (V.drop 1 v) (V.drop 2 v)
+    keepValue (_, m, _) = m
+    isLocalMinOrMax (l, m, r) = (m < l && m < r) || (m > l && m > r)
+
+findLocMinMax :: Ord a => [a] -> [a]
 findLocMinMax xs = map keepValue . filter isLocalMinOrMax $ zippedToWindow
   where
     zippedToWindow = zip3 xs (drop 1 xs) (drop 2 xs)
     keepValue (_, m, _) = m
     isLocalMinOrMax (l, m, r) = (m < l && m < r) || (m > l && m > r)
 
+flmm :: VS.Vector D -> VS.Vector D
+flmm vec = VS.ifilter (\ix val -> boolVec vec VS.! ix) <| VS.init (VS.tail vec)
+  where
+    isLocalMinOrMax :: D -> D -> D -> Bool
+    isLocalMinOrMax l m r = (m < l && m < r) || (m > l && m > r)
+    boolVec :: VS.Vector D -> VS.Vector Bool
+    boolVec v = VS.zipWith3 isLocalMinOrMax v (VS.drop 1 v) (VS.drop 2 v)
+
+--   where
+--     trueIx = ix + 1
+--     lIx =
+--     mIx =
+--     rIx =
+--     isLocalMinOrMax :: Int -> Bool
+--     isLocalMinOrMax ix = (m < l && m < r) || (m > l && m > r)
 writePlot :: (Default r, ToRenderable r) => FilePath -> EC r () -> IO ()
 writePlot filePath plot = toFile def {_fo_format = PDF} filePath plot
