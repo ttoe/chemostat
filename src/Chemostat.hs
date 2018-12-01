@@ -17,15 +17,17 @@ import Numeric.LinearAlgebra
 import Util
 
 type D = Double
+type VecD = Vector Double
+type MatD = Matrix Double
 
-initVals :: Vector D -- [   N,  Cu,  Cd,  Pg,  Ps ]
+initVals :: VecD -- [  N,  Cu,  Cd,  Pg,  Ps]
 initVals = fromList [0.5, 0.5, 0.5, 0.2, 0.0]
 
-time :: Vector D
+time :: VecD
 time = times 0 10000 0.1
 
 -- TODO: put in Model0; no need to export model itself, rather export model applied to solver
-solveEqs :: (Par -> D -> Vector D -> Vector D) -> Par -> Matrix D
+solveEqs :: (Par -> D -> VecD -> VecD) -> Par -> MatD
 solveEqs model pars =
   odeSolveV
     RKf45 -- ODE Method
@@ -37,7 +39,7 @@ solveEqs model pars =
     time -- desired solution times
 
 -- adding a column to the solution matrix, containing the total of both clones Cu+Cd, and the time
-solWithTimeAndCt :: Matrix D
+solWithTimeAndCt :: MatD
 solWithTimeAndCt = matrixAddTimeCol time <| matrixAddSumCol 1 2 sol
   where
     sol = solveEqs model0 basePars0
@@ -51,7 +53,7 @@ bifurcationPars = [basePars0 {d = x} | x <- [0.20,0.21 .. 0.30]]
 
 -- TODO: carry the used parameters with the computation, to later write some meta data?
 -- bifurcation with progress ouput
-bifSolutionsWO :: (Par -> D -> Vector D -> Vector D) -> [Par] -> IO [Matrix D]
+bifSolutionsWO :: (Par -> D -> VecD -> VecD) -> [Par] -> IO [MatD]
 bifSolutionsWO eqSystem bifPars = do
   let eqSolver = solveEqs eqSystem
   forM bifPars $ \pars -> do
@@ -59,7 +61,7 @@ bifSolutionsWO eqSystem bifPars = do
     pure <| eqSolver pars
 
 -- bifurcation without progress output
-bifSolutions :: [Par] -> [Matrix D]
+bifSolutions :: [Par] -> [MatD]
 bifSolutions bifPars = fmap (solveEqs model0) bifPars
 
 timePlot sol = do
@@ -71,7 +73,7 @@ timePlot sol = do
   where
     plotLine name col = plot <| line name [mkPlotTuples sol !! col]
 
-phasePlot1, phasePlot2 :: Matrix D -> EC (Layout D D) ()
+phasePlot1, phasePlot2 :: MatD -> EC (Layout D D) ()
 phasePlot1 sol =
   plot <| line "Pg~Ct" [(\[_, _, _, _, pg, _, ct] -> (ct, pg)) <$> toLists sol]
 

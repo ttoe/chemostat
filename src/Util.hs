@@ -38,6 +38,8 @@ import Numeric.LinearAlgebra
   )
 
 type D = Double
+type MatD = Matrix Double
+type VecD = Vector Double
 
 -- alias differentiation function to central derivative with initial step size 0.01
 diff :: (D -> D) -> D -> D
@@ -47,13 +49,13 @@ diff fun point = fst $ derivCentral 0.01 fun point
 -- and the other columns are the solutions at a given time
 -- creates a list of lists containing tuples
 -- for each variable and the corresponding time
-mkPlotTuples :: Matrix D -> [[(D, D)]]
+mkPlotTuples :: MatD -> [[(D, D)]]
 mkPlotTuples m = fmap (zip timeCol) columns
   where
     columns = toList <$> toColumns m
     timeCol = head columns
 
-mtxLast :: Int -> Matrix D -> Matrix D
+mtxLast :: Int -> MatD -> MatD
 mtxLast l m = m ?? (TakeLast takeLast, All)
   where
     timeStep = m `atIndex` (1, 0) -- 2nd value (1, _) in 1st column (_, 0) is time step from times function
@@ -63,16 +65,16 @@ mtxLast l m = m ?? (TakeLast takeLast, All)
 nowTimeString :: IO String
 nowTimeString = formatTime defaultTimeLocale "%F_%H%M%S" <$> getCurrentTime
 
-matrixAddSumCol :: Int -> Int -> Matrix D -> Matrix D
+matrixAddSumCol :: Int -> Int -> MatD -> MatD
 matrixAddSumCol x y m = fromColumns (columns <> [colSum])
   where
     columns = toColumns m
     colSum = VS.zipWith (+) (columns !! x) (columns !! y)
 
-matrixAddTimeCol :: Vector D -> Matrix D -> Matrix D
+matrixAddTimeCol :: VecD -> MatD -> MatD
 matrixAddTimeCol t m = fromColumns ([t] <> toColumns m)
 
-times :: D -> D -> D -> Vector D
+times :: D -> D -> D -> VecD
 times from to stepsize = linspace steps (from, to)
   where
     steps = floor $ (to - from) / stepsize
