@@ -8,13 +8,13 @@ import Numeric.LinearAlgebra (Vector, fromList, toList)
 type D = Double
 
 -- parameter data type, holding the parameters that are passed to the differential equations.
-data Par = Par
+data Par0 = Par0
   { d, ni, r, pu, pd, ku, kd, gg, kg, eg, gs, ks, es :: D
   } deriving (Show)
 
-basePars0 :: Par
-basePars0 =
-  Par
+basePar0s0 :: Par0
+basePar0s0 =
+  Par0
     { d = 0.25 -- dilution rate
     , ni = 80.0 -- inflow nutrient concentration
     , r = 1.0 -- growth rate clones
@@ -30,26 +30,26 @@ basePars0 =
     , es = 0.5 -- conversion effienciency Ps
     }
 
-dn, dcu, dcd, dpg, dps :: Par -> D -> D -> D -> D -> D -> D
-dn Par {..} n cu cd _ _ =
+dn, dcu, dcd, dpg, dps :: Par0 -> D -> D -> D -> D -> D -> D
+dn Par0 {..} n cu cd _ _ =
   -d * n + d * ni - r * (n / (ku + n)) * cu - r * (n / (kd + n)) * cd
 
-dcu Par {..} n cu cd pg _ =
+dcu Par0 {..} n cu cd pg _ =
   -d * cu + r * (n / (ku + n)) * cu -
   gg * pu * (cu / (kg + pu * cu + pd * cd)) * pg
 
-dcd Par {..} n cu cd pg _ =
+dcd Par0 {..} n cu cd pg _ =
   -d * cd + r * (n / (kd + n)) * cd -
   gg * pd * (cd / (kg + pu * cu + pd * cd)) * pg
 
-dpg Par {..} _ cu cd pg ps =
+dpg Par0 {..} _ cu cd pg ps =
   -d * pg + eg * gg * pu * (cu / (kg + pu * cu + pd * cd)) * pg +
   eg * gg * pd * (cd / (kg + pu * cu + pd * cd)) * pg -
   gs * (pg / (ks + pg)) * ps
 
-dps Par {..} _ _ _ pg ps = -d * ps + es * gs * (pg / (ks + pg)) * ps
+dps Par0 {..} _ _ _ pg ps = -d * ps + es * gs * (pg / (ks + pg)) * ps
 
-model0 :: Par -> D -> Vector D -> Vector D
+model0 :: Par0 -> D -> Vector D -> Vector D
 model0 pars t vars =
   fromList
     [ dn pars n cu cd pg ps
