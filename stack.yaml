@@ -7,4 +7,5 @@ extra-deps:
 - Chart-cairo-1.9
 - flow-1.0.12
 resolver: nightly-2018-06-29
+- dimensional-1.1
 allow-newer: true

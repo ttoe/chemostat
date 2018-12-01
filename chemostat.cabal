@@ -23,4 +23,5 @@ executable chemostat
     , vector
     , time
     , flow
+    , dimensional
   default-language: Haskell2010
