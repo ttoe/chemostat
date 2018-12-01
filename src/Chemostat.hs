@@ -31,9 +31,9 @@ solveEqs :: (Par -> D -> VecD -> VecD) -> Par -> MatD
 solveEqs model pars =
   odeSolveV
     RKf45 -- ODE Method
-    1E-8 -- initial step size
-    1E-8 -- absolute tolerance for the state vector
-    1E-8 -- relative tolerance for the state vector
+    1E-9 -- initial step size
+    1E-9 -- absolute tolerance for the state vector
+    1E-9 -- relative tolerance for the state vector
     (model pars) -- differential equations: xdot(t,x), ...
     initVals -- inital conditions
     time -- desired solution times
