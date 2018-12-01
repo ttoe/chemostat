@@ -87,7 +87,7 @@ runChemostat = do
         fmap
           (fmap (findLocMinMax . toList) . toColumns . mtxLast 300)
           addedSumColMatrices
-  let numMinsMaxs d = fmap (fmap $ length . nubBy (\x y -> x - y < d)) minsMaxs
+  let numMinsMaxs cutoffDiff = fmap (fmap $ length . nubBy (\x y -> x - y < cutoffDiff)) minsMaxs
   -- print minsMaxs
   print $ numMinsMaxs 1.0
   -- timeStr <- nowTimeString
